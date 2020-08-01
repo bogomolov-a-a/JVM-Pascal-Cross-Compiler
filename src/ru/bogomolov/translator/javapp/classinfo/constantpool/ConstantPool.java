@@ -16,16 +16,16 @@ public class ConstantPool
 		{
 			throw new IOException("wrong constant pool size! Must be greather than 1");
 		}
-		System.out.println("Constant Pool entry count is "+realSize);
+		System.out.println("Constant Pool entry count is "+size);
 		entries=new ArrayList<>();
-		for(short i=0;i<realSize;i++)
+		for(short i=0;i<size;i++)
 		{
 			System.out.println("reading constant pool index "+i);
 			entries.add(new ConstantPoolEntry(dis));
 			System.out.println("constant pool index "+i+ " read.");
 		}
 	}
-	public ConstantPoolEntry getEntryValue(int index)
+	public ConstantPoolEntry getEntry(short index)
 	{		
 		return entries.get(index);		
 	}	

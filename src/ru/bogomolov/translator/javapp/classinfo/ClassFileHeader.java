@@ -3,7 +3,7 @@ package ru.bogomolov.translator.javapp.classinfo;
 import java.io.DataInputStream;
 import java.io.IOException;
 
-class ClassFileHeader
+public class ClassFileHeader
 {
 	/* Class File Constants */
     private static final int JVM_MAGIC                   = 0xcafebabe;

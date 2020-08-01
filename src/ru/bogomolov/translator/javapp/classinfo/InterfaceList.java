@@ -25,7 +25,7 @@ public class InterfaceList
 		}		
 	}
 	private void readInterfaceInfo(DataInputStream dis,
-		ConstantPool constantPool)
+		ConstantPool constantPool) throws IOException
 	{
 		short entryIndex=dis.readShort();
 		ConstantPoolEntry entry=constantPool.getEntry(entryIndex);
@@ -40,8 +40,8 @@ public class InterfaceList
 	{
 		return size;
 	}
-	short getInterface(int index)
+	ClassEntry getInterface(int index)
 	{
-		return content.get(i);
+		return content.get(index);
 	}
 }

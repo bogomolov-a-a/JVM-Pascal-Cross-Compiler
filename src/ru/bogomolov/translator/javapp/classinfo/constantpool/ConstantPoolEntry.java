@@ -39,69 +39,108 @@ public class ConstantPoolEntry
 	ConstantPoolEntry(DataInputStream dis)throws IOException
 	{
 		tag=dis.readByte();
-		switch(tag)
+		if(tryReadNumber(dis))
 		{
-			case CONSTANT_UTF8:
-			{
-				utf8Entry=new UTF8Entry(dis);				
-				break;
-			}
-			case CONSTANT_INTEGER:
-			case CONSTANT_FLOAT:				
-			{
-				wordEntry=new WordEntry(dis);				
-				break;
-			}
-			case CONSTANT_DOUBLE:
-			case CONSTANT_LONG:
-			{
-				dwordEntry=new DWordEntry(dis);
-				break;
-			}
-			case CONSTANT_STRING:
-			{
-				stringEntry=new StringEntry(dis);
-				break;
-			}				
-			case CONSTANT_CLASS:
-			{				
-				classEntry=new ClassEntry(dis);
-				break;
-			}           
-			case CONSTANT_FIELD:
-			case CONSTANT_METHOD:
-			case CONSTANT_INTERFACEMETHOD:
-			{				
-				memberEntry=new MemberEntry(dis);
-				break;
-			}
-			case CONSTANT_NAMEANDTYPE:
-			{
-				nameAndTypeEntry=new NameAndTypeEntry(dis);				
-				break;
-			}
-			/*NEW IN JAVA 8*/
-			case CONSTANT_METHODHANDLE:
-			{
-				methodHandleEntry=new MethodHandleEntry(dis);
-				break;
-			}
-			case CONSTANT_METHODTYPE:
-			{
-				methodTypeEntry=new MethodTypeEntry(dis);				
-				break;
-			}
-			case CONSTANT_INVOKEDYNAMIC:
-			{
-				invokeDynamicEntry=new InvokeDynamicEntry(dis);				
-				break;
-			}
-			/*new in java 11*/
-			default:
-			{
-				throw new ClassFormatError("tag '"+tag+"' not supported current version parser!");
-			}
+			return;
 		}
+		if(tryReadCharEntry(dis))
+		{
+			return;
+		}		
+		if(tryReadClassFileRuntimeEntry(dis))
+		{
+			return;
+		}
+		throw new ClassFormatError("tag '"+tag+"' not supported current version parser!");		
+	}
+	private boolean tryReadNumber(DataInputStream dis)throws IOException
+	{		
+		boolean result=tryReadWord(dis);
+		if(result)
+		{
+			return true;
+		}		
+		if(tag==CONSTANT_DOUBLE||tag== CONSTANT_LONG)
+		{
+			dwordEntry=new DWordEntry(dis);
+			return true;
+		}			
+		return false;
+	}
+	private boolean tryReadWord(DataInputStream dis)throws IOException
+	{
+		if(tag==CONSTANT_INTEGER||tag==CONSTANT_FLOAT)		
+		{			
+				wordEntry=new WordEntry(dis);				
+				return true;
+		}
+		return false;
+	}
+	private boolean tryReadCharEntry(DataInputStream dis)throws IOException	
+	{
+		if(tag==CONSTANT_UTF8)
+		{
+			utf8Entry=new UTF8Entry(dis);				
+			return true;
+		}
+		if(tag==CONSTANT_STRING)
+		{
+			stringEntry=new StringEntry(dis);
+			return true;
+		}						
+		if(tag== CONSTANT_NAMEANDTYPE)
+		{
+			nameAndTypeEntry=new NameAndTypeEntry(dis);				
+			return true;
+		}
+		return false;
+	}
+	private boolean tryReadClassFileRuntimeEntry(DataInputStream dis)throws IOException
+	{
+		if(tag==CONSTANT_CLASS)
+		{				
+			classEntry=new ClassEntry(dis);
+			return true;
+		}           
+		if(tag==CONSTANT_FIELD||tag==CONSTANT_METHOD)
+		{
+			memberEntry=new MemberEntry(dis);
+			return true;
+		}
+		return tryReadVMTTableEntry(dis);			
+	}
+	private boolean tryReadVMTTableEntry(DataInputStream dis)throws IOException
+	{
+		if(tag==CONSTANT_INTERFACEMETHOD)
+		{				
+			memberEntry=new MemberEntry(dis);
+			return true;
+		}
+		return tryReadNewInJVM8(dis);			
+	}
+	private boolean tryReadNewInJVM8(DataInputStream dis)throws IOException
+	{
+		if(tag==CONSTANT_METHODHANDLE)
+		{
+			methodHandleEntry=new MethodHandleEntry(dis);
+			return true;
+		}
+		if(tag==CONSTANT_METHODTYPE)
+		{
+			methodTypeEntry=new MethodTypeEntry(dis);				
+			return true;
+		}
+		if(tag==CONSTANT_INVOKEDYNAMIC)
+		{
+			invokeDynamicEntry=new InvokeDynamicEntry(dis);				
+			return true;
+		}
+		return tryReadNewInJVM11(dis);		
+	}
+	private boolean tryReadNewInJVM11(DataInputStream dis)throws IOException
+	{
+		System.out.println(dis.toString());
+		return false;
 	}
 	public String asUTF8()
 	{
@@ -185,12 +224,18 @@ public class ConstantPoolEntry
 	}
 	public boolean hasValue()
 	{
-		return tag==CONSTANT_UTF8||
-			tag==CONSTANT_INTEGER||
+		return isNumber()||isString();
+	}
+	private boolean isNumber()
+	{
+		return tag==CONSTANT_INTEGER||
 			tag==CONSTANT_FLOAT||
 			tag==CONSTANT_DOUBLE||
-			tag==CONSTANT_LONG||
-			tag==CONSTANT_STRING;
+			tag==CONSTANT_LONG;
+	}
+	private boolean isString()
+	{
+		return tag==CONSTANT_UTF8||tag==CONSTANT_STRING;
 	}
 	
 }

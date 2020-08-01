@@ -3,6 +3,7 @@ package ru.bogomolov.translator.javapp.classinfo;
 import java.io.DataInputStream;
 import java.io.IOException;
 import ru.bogomolov.translator.javapp.classinfo.constantpool.ConstantPool;
+import ru.bogomolov.translator.javapp.classinfo.constantpool.ConstantPoolEntry;
 import ru.bogomolov.translator.javapp.classinfo.constantpool.ClassEntry;
 
 public class CurrentClassInfo
@@ -12,12 +13,12 @@ public class CurrentClassInfo
 	CurrentClassInfo(DataInputStream dis,
 		ConstantPool constantPool)throws IOException
 	{
-		access_flags=dis.readShort();
-		this_class=dis.readShort();
-		ConstantPoolEntry entry=constantPool.getEntry(this_class);
+		accessFlags=dis.readShort();
+		short thisClassIndex=dis.readShort();
+		ConstantPoolEntry entry=constantPool.getEntry(thisClassIndex);
 		if(entry.isClass())
 		{
-			classInfoEntry=entry.asClassInfo();
+			classInfoEntry=entry.asClassEntry();
 			return;
 		}
 		throw new IOException("Can't detect CONSTANT_CLASSINFO entry for this class file!");	
@@ -27,7 +28,7 @@ public class CurrentClassInfo
 		return accessFlags;
 	}
     
-	public ClassEntry getClassInfoEntry();
+	public ClassEntry getClassInfoEntry()
 	{
 		return classInfoEntry;
 	}
